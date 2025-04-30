@@ -8,10 +8,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,68 +25,73 @@ import com.pdmtaller2.RafaelGutierrez_00073123.ui.navigations.navigations
 
 @Composable
 fun ListScreen(restaurants: List<Restaurant>, navController: NavHostController) {
-    val quickFood = restaurants.filter { it.categories.any { category -> category.lowercase() == "pizzas" } }
-    val mexicanFood = restaurants.filter { it.categories.any { category -> category.lowercase() == "comida mexicana" } }
-    val italianFood = restaurants.filter { it.categories.any { category -> category.lowercase() == "comida italiana" } }
-    val asianFood = restaurants.filter { it.categories.any { category -> category.lowercase() == "comida asiática" } }
-    val healthyFood = restaurants.filter { it.categories.any { category -> category.lowercase() == "comida saludable" } }
-    val desserts = restaurants.filter { it.categories.any { category -> category.lowercase() == "postres" } }
-    val drinks = restaurants.filter { it.categories.any { category -> category.lowercase() == "bebidas" } }
-
     val scrollState = rememberScrollState()
+
+    val categorized = listOf(
+        "🍕 Pizzas" to "pizzas",
+        "🌮 Comida Mexicana" to "comida mexicana",
+        "🍝 Comida Italiana" to "comida italiana",
+        "🍣 Comida Asiática" to "comida asiática",
+        "🥗 Comida Saludable" to "comida saludable",
+        "🍰 Postres y Dulces" to "postres",
+        "🥤 Bebidas" to "bebidas"
+    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)) {
-
-        CategoryRow(title = "🍕 Pizzas", restaurants = quickFood, navController = navController)
-        CategoryRow(title = "🌮 Comida Mexicana", restaurants = mexicanFood, navController = navController)
-        CategoryRow(title = "🍝 Comida Italiana", restaurants = italianFood, navController = navController)
-        CategoryRow(title = "🍣 Comida Asiática", restaurants = asianFood, navController = navController)
-        CategoryRow(title = "🥗 Comida Saludable", restaurants = healthyFood, navController = navController)
-        CategoryRow(title = "🍰 Postres y Dulces", restaurants = desserts, navController = navController)
-        CategoryRow(title = "🥤 Bebidas", restaurants = drinks, navController = navController)
+            .verticalScroll(scrollState)
+            .padding(8.dp)
+    ) {
+        categorized.forEach { (title, category) ->
+            val filtered = restaurants.filter { it.categories.any { it.equals(category, ignoreCase = true) } }
+            if (filtered.isNotEmpty()) {
+                CategoryRow(title = title, restaurants = filtered, navController = navController)
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
     }
 }
 
 @Composable
 fun CategoryRow(title: String, restaurants: List<Restaurant>, navController: NavController) {
-    Column(modifier = Modifier.padding(8.dp)) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(4.dp)
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
+
         LazyRow(
             contentPadding = PaddingValues(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(restaurants) { restaurant ->
-                Card(
+                ElevatedCard(
                     modifier = Modifier
                         .width(200.dp)
-                        .padding(4.dp)
                         .clickable {
                             navController.navigate("${navigations.Menu}/${restaurant.id}")
-                        }
+                        },
+                    shape = MaterialTheme.shapes.medium
                 ) {
                     Column(modifier = Modifier.padding(8.dp)) {
                         Image(
                             painter = rememberAsyncImagePainter(model = restaurant.ImageUrl),
                             contentDescription = restaurant.name,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(120.dp),
-                            contentScale = ContentScale.Crop
+                                .height(120.dp)
+                                .clip(MaterialTheme.shapes.medium)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = restaurant.name,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 2
                         )
                     }
                 }
@@ -92,3 +99,4 @@ fun CategoryRow(title: String, restaurants: List<Restaurant>, navController: Nav
         }
     }
 }
+

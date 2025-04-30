@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,7 @@ fun MenuScreen(restaurantId: String, navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(restaurant?.name ?: "") },
+                title = { Text(restaurant?.name ?: "", maxLines = 1) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
@@ -38,54 +39,74 @@ fun MenuScreen(restaurantId: String, navController: NavController) {
             )
         }
     ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(16.dp)
+                .fillMaxSize()
+        ) {
             Text(
                 text = restaurant?.description ?: "",
-                modifier = Modifier.padding(8.dp),
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
             OutlinedTextField(
                 value = search,
                 onValueChange = { search = it },
                 label = { Text("Buscar platillo") },
+                singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
+                    .padding(bottom = 16.dp),
+                shape = MaterialTheme.shapes.large
             )
 
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(restaurant?.menu?.filter { it.name.contains(search, ignoreCase = true) } ?: emptyList()) { dish ->
                     val isInCart = cartState[dish.id] ?: false
-                    Card(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)) {
+
+                    ElevatedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
                         Column(
                             modifier = Modifier
-                                .padding(8.dp)
-                                .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .padding(12.dp)
+                                .fillMaxWidth()
                         ) {
                             Image(
                                 painter = rememberAsyncImagePainter(model = dish.ImageUrl),
                                 contentDescription = dish.name,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(150.dp)
+                                    .height(180.dp)
+                                    .padding(bottom = 8.dp)
+                                    .clip(MaterialTheme.shapes.medium)
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(dish.name, fontWeight = FontWeight.Bold)
-                            Text(dish.description, style = MaterialTheme.typography.bodySmall)
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = dish.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = dish.description,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
                             Button(
                                 onClick = {
                                     cartState[dish.id] = !isInCart
-                                    val message = if (isInCart) "${dish.name} removido del carrito" else "${dish.name} agregado al carrito"
+                                    val message = if (isInCart)
+                                        "${dish.name} removido del carrito"
+                                    else
+                                        "${dish.name} agregado al carrito"
                                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                 },
-                                modifier = Modifier.padding(top = 8.dp),
+                                modifier = Modifier.align(Alignment.End)
                             ) {
-                                Text(if (isInCart) "${dish.name} agregado al carrito" else "Agregar al carrito")
+                                Text(if (isInCart) "Remover del carrito" else "Agregar al carrito")
                             }
                         }
                     }

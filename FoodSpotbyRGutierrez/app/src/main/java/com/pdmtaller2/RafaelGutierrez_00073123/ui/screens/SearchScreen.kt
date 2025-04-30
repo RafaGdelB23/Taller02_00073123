@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -30,37 +31,60 @@ fun SearchScreen(navController: NavHostController) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         OutlinedTextField(
             value = consulta,
             onValueChange = { consulta = it },
             label = { Text("Buscar restaurante, platillo o categoría") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            shape = MaterialTheme.shapes.large
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        LazyColumn {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(filteredRestaurants) { restaurant ->
-                Card(
+                ElevatedCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp)
                         .clickable {
                             navController.navigate("${navigations.Menu}/${restaurant.id}")
-                        }
+                        },
+                    shape = MaterialTheme.shapes.medium,
+                    elevation = CardDefaults.elevatedCardElevation(4.dp)
                 ) {
-                    Row(modifier = Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Image(
                             painter = rememberAsyncImagePainter(restaurant.ImageUrl),
                             contentDescription = restaurant.name,
                             modifier = Modifier
                                 .size(80.dp)
-                                .padding(end = 8.dp)
+                                .padding(end = 12.dp)
+                                .clip(MaterialTheme.shapes.medium)
                         )
-                        Column {
-                            Text(restaurant.name, fontWeight = FontWeight.Bold)
-                            Text(restaurant.description, style = MaterialTheme.typography.bodySmall)
+                        Column(
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = restaurant.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = restaurant.description,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
                     }
                 }
