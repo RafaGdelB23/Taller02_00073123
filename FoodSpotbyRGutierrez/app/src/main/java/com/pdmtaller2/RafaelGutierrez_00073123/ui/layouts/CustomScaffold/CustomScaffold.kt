@@ -31,7 +31,7 @@ fun CustomScaffold(navController: NavHostController) {
                 composable(navigations.Listado) {
                     ListScreen(restaurants = restaurants, navController = navController)
                 }
-                composable(navigations.Busqueda) { SearchScreen() }
+                composable(navigations.Busqueda) { SearchScreen(navController = navController) }
                 composable(navigations.Ordenes) { OrdersScreen() }
                 composable("${navigations.Menu}/{restaurantId}") { backStackEntry ->
                     val restaurantId = backStackEntry.arguments?.getString("restaurantId")?.toIntOrNull()
